@@ -13,13 +13,6 @@ module.exports = ({ strapi }) => ({
         .plugin('paper-trail')
         .service('paperTrailService');
 
-        console.log(
-          schema,
-        uid,
-        change,
-        isAdmin
-        );
-
       await paperTrailService.createPaperTrail(
         ctx,
         schema,

@@ -6,8 +6,6 @@ import useGetAdminUsers from '../../hooks/useGetAdminUsers';
 const EditorSelect = ({ value, setValue }) => {
   const { data: users, isLoading } = useGetAdminUsers();
 
-  console.log(users);
-
   return (
     <SingleSelect
       label="Editor"
