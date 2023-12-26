@@ -3,6 +3,7 @@ import {
   useFetchClient,
   useNotification
 } from '@strapi/helper-plugin';
+import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
 
 export default function useUpdatePaperTrail() {

@@ -3,6 +3,7 @@ import {
   useFetchClient,
   useNotification
 } from '@strapi/helper-plugin';
+import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
 
 export default function useApplyTrail() {
@@ -13,7 +14,10 @@ export default function useApplyTrail() {
   return useMutation({
     mutationFn: async ({ trail }) => {
       const { recordId, content, contentType } = trail;
-      await put(`/content-manager/collection-types/${contentType}/${recordId}`, content);
+      await put(
+        `/content-manager/collection-types/${contentType}/${recordId}`,
+        content
+      );
 
       return put(
         `/content-manager/collection-types/plugin::paper-trail.trail/${trail.id}`,
