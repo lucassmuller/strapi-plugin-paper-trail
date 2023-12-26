@@ -101,7 +101,7 @@ const TrailPage = () => {
     );
   }
 
-  const schema = contentTypes.find(type => type.uid === trail.contentType);
+  const schema = contentTypes?.find(type => type.uid === trail.contentType);
 
   const getUserFullName = user =>
     user ? `${user.firstname} ${user.lastname}` : undefined;

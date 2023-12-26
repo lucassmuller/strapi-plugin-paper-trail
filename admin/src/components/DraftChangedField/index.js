@@ -9,6 +9,7 @@ import {
   Typography
 } from '@strapi/design-system';
 import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
 import isObject from 'lodash/isObject';
 import React from 'react';
 
@@ -40,31 +41,51 @@ const DraftChangedField = ({
 
   if (type === 'component') {
     const component = get(schema, ['attributes', path, 'component'], '');
-    const componentType = componentTypes.find(type => type.uid === component);
+    const componentType = componentTypes?.find(type => type.uid === component);
+    const isRepeatable = get(schema, ['attributes', path, 'repeatable'], '');
 
     return (
-      <Wrapper
-        hideComment
-        label={path}
-        level={level}
-        fullPath={fullPath}
-        comment={get(comments, fullPath, '')}
-        onCommentChange={onCommentChange}
-      >
+      <Wrapper hideComment label={path} level={level}>
         <Flex gap={6} direction="column" alignItems="stretch">
-          {Object.entries(value).map(([key, value]) => (
-            <DraftChangedField
-              key={key}
-              level={level + 1}
-              path={key}
-              pathToParent={path}
-              value={value}
-              oldValue={oldValue?.[key]}
-              schema={componentType}
-              comments={comments}
-              handleCommentChange={handleCommentChange}
-            />
-          ))}
+          {isRepeatable
+            ? value.map((newValue, index) =>
+                isEmpty(newValue) ? null : (
+                  <Wrapper
+                    hideComment
+                    label={`Item ${index + 1}`}
+                    level={level + 1}
+                  >
+                    <Flex gap={6} direction="column" alignItems="stretch">
+                      {Object.entries(newValue).map(([key, value]) => (
+                        <DraftChangedField
+                          key={key}
+                          level={level + 2}
+                          path={key}
+                          pathToParent={path}
+                          value={value}
+                          oldValue={oldValue?.[index]?.[key]}
+                          schema={componentType}
+                          comments={comments}
+                          handleCommentChange={handleCommentChange}
+                        />
+                      ))}
+                    </Flex>
+                  </Wrapper>
+                )
+              )
+            : Object.entries(value).map(([key, value]) => (
+                <DraftChangedField
+                  key={key}
+                  level={level + 1}
+                  path={key}
+                  pathToParent={path}
+                  value={value}
+                  oldValue={oldValue?.[key]}
+                  schema={componentType}
+                  comments={comments}
+                  handleCommentChange={handleCommentChange}
+                />
+              ))}
         </Flex>
       </Wrapper>
     );
@@ -72,7 +93,7 @@ const DraftChangedField = ({
 
   if (type === 'relation') {
     const target = get(schema, ['attributes', path, 'targetModel']);
-  
+
     return (
       <Wrapper
         label={path}

@@ -78,6 +78,11 @@ const getTrailChangedFields = ({
                   return subCleanedData;
                 })
               : undefined;
+            cleanedValue = cleanedValue?.every(
+              item => isObject(item) && isEmpty(item)
+            )
+              ? undefined
+              : cleanedValue;
           } else {
             cleanedValue = newValue
               ? recursiveGetChangedFields(
