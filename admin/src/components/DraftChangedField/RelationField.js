@@ -1,5 +1,4 @@
-import { Box, FieldLabel, Grid, Loader } from '@strapi/design-system';
-import { Link } from '@strapi/design-system/v2';
+import { Box, FieldLabel, Grid, Loader, Link } from '@strapi/design-system';
 import keyBy from 'lodash/keyBy';
 import React from 'react';
 
@@ -69,7 +68,7 @@ const RelationList = ({ value, label }) => {
               padding={3}
               marginTop={1}
             >
-              <Link href={item.href}>
+              <Link to={item.href} target="_blank">
                 {item.name} (ID: {item.id})
               </Link>
             </Box>
