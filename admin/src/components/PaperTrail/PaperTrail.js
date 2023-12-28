@@ -16,16 +16,23 @@ import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 
+import cleanData from '../../utils/cleanData';
 import getTrad from '../../utils/getTrad';
 import getUser from '../../utils/getUser';
-import cleanData from '../../utils/cleanData';
 import PaperTrailViewer from '../PaperTrailViewer/PaperTrailViewer';
 
 function PaperTrail() {
   /**
    * Get the current schema
    */
-  const { layout, allLayoutData, initialData, modifiedData, slug } = useCMEditViewDataManager();
+  const {
+    layout,
+    allLayoutData,
+    initialData,
+    modifiedData,
+    slug,
+    isSingleType
+  } = useCMEditViewDataManager();
   const toggleNotification = useNotification();
 
   const { uid, pluginOptions = {} } = layout;
@@ -51,7 +58,9 @@ function PaperTrail() {
         '/content-manager/collection-types/plugin::paper-trail.trail?page=1',
         'pageSize=999',
         'sort=version:DESC',
-        `filters[$and][0][contentType][$eq]=${uid}&filters[$and][1][recordId][$eq]=${id}`
+        `filters[$and][0][contentType][$eq]=${uid}&filters[$and][1][recordId][$eq]=${
+          isSingleType ? 1 : id
+        }`
       ].join('&');
 
       try {
@@ -110,7 +119,7 @@ function PaperTrail() {
     }
   }, [trails]);
 
-  const handleUpdateComment = (comment) => {
+  const handleUpdateComment = comment => {
     if (!current) return;
 
     request.put(
@@ -136,20 +145,17 @@ function PaperTrail() {
     try {
       const data = createFormData(modifiedData, initialData);
 
-      await request.post(
-        '/paper-trail/draft',
-        {
-          contentType: slug,
-          ...data
-        }
-      );
+      await request.post('/paper-trail/draft', {
+        contentType: slug,
+        ...data
+      });
 
       toggleNotification({
         type: 'success',
         message: formatMessage({
           id: getTrad('plugin.admin.paperTrail.draftSaved'),
           defaultMessage: 'Draft version saved'
-        }),
+        })
       });
     } catch (err) {
       console.error(err);
@@ -158,10 +164,10 @@ function PaperTrail() {
         message: formatMessage({
           id: getTrad('plugin.admin.paperTrail.draftError'),
           defaultMessage: 'Error saving draft version'
-        }),
+        })
       });
     }
-  }
+  };
 
   if (!paperTrailEnabled) {
     return <Fragment />;
@@ -246,16 +252,8 @@ function PaperTrail() {
                   <Textarea
                     label="Version comment"
                     defaultValue={current.comment || ''}
-                    onChange={(event) => handleUpdateComment(event.target.value)}
+                    onChange={event => handleUpdateComment(event.target.value)}
                   />
-                </Box>
-                <Box paddingTop={4}>
-                  <Button onClick={() => handleSaveDraft()}>
-                    {formatMessage({
-                      id: getTrad('plugin.admin.paperTrail.saveDraft'),
-                      defaultMessage: 'Save as draft'
-                    })}
-                  </Button>
                 </Box>
                 <Box paddingTop={4}>
                   <Button onClick={() => setModalVisible(!modalVisible)}>
@@ -267,6 +265,14 @@ function PaperTrail() {
                 </Box>
               </Fragment>
             )}
+            <Box paddingTop={4}>
+              <Button onClick={() => handleSaveDraft()}>
+                {formatMessage({
+                  id: getTrad('plugin.admin.paperTrail.saveDraft'),
+                  defaultMessage: 'Save as draft'
+                })}
+              </Button>
+            </Box>
           </Fragment>
         ) : (
           <Loader />

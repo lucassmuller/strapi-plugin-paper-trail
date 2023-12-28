@@ -7,6 +7,7 @@ import {
   LinkButton,
   Typography
 } from '@strapi/design-system';
+import { LoadingIndicatorPage, NoContent } from '@strapi/helper-plugin';
 import { ArrowLeft, Check, Eye } from '@strapi/icons';
 import set from 'lodash/fp/set';
 import isEmpty from 'lodash/isEmpty';
@@ -22,7 +23,6 @@ import useUpdatePaperTrail from '../../hooks/useUpdatePaperTrail';
 import pluginId from '../../pluginId';
 import getTrailChangedFields from '../../utils/getTrailChangedFields';
 import getTrailEntityName from '../../utils/getTrailEntityName';
-import { LoadingIndicatorPage, NoContent } from '@strapi/helper-plugin';
 
 const TrailPage = () => {
   const { id } = useParams();
@@ -85,10 +85,6 @@ const TrailPage = () => {
     });
   };
 
-  const handleApplyTrail = () => {
-    applyTrail({ trail });
-  };
-
   const isLoading = isLoadingContentTypes || isLoadingTrail;
 
   if (isLoading) return <LoadingIndicatorPage />;
@@ -103,11 +99,20 @@ const TrailPage = () => {
 
   const schema = contentTypes?.find(type => type.uid === trail.contentType);
 
+  const handleApplyTrail = () => {
+    applyTrail({ trail, schema });
+  };
+
   const getUserFullName = user =>
     user ? `${user.firstname} ${user.lastname}` : undefined;
 
   const trailBy = getUserFullName(trail.admin_user);
   const lastChangeBy = getUserFullName(trail.updatedBy);
+
+  const isSingleEntity = schema?.kind === 'singleType';
+  const entityUrl = `/content-manager/${schema?.kind}/${trail.contentType}${
+    isSingleEntity ? '' : `/${trail.recordId}`
+  }`;
 
   return (
     <div>
@@ -133,7 +138,7 @@ const TrailPage = () => {
               size="S"
               variant="tertiary"
               startIcon={<Eye />}
-              to={`/content-manager/collectionType/${trail.contentType}/${trail.recordId}`}
+              to={entityUrl}
               target="_blank"
             >
               View entity

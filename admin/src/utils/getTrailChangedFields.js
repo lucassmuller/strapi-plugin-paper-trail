@@ -96,6 +96,30 @@ const getTrailChangedFields = ({
 
           break;
 
+        case 'dynamiczone':
+          cleanedValue = newValue
+            ? newValue.map((data, index) => {
+                const subCleanedData = recursiveGetChangedFields(
+                  data,
+                  (value ?? [])[index],
+                  getComponentSchema(data.__component),
+                  `${path}.${index}`
+                );
+
+                return isEmpty(subCleanedData) ? {} : {
+                  ...subCleanedData,
+                  __component: data.__component,
+                };
+              })
+            : undefined;
+          cleanedValue = cleanedValue?.every(
+            item => isObject(item) && isEmpty(item)
+          )
+            ? undefined
+            : cleanedValue;
+
+          break;
+
         default:
           if (!isEqual(value, newValue)) cleanedValue = newValue;
           break;

@@ -3,7 +3,7 @@ import {
   useFetchClient,
   useNotification
 } from '@strapi/helper-plugin';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import * as React from 'react';
 import { useQueries } from 'react-query';
 
@@ -11,6 +11,16 @@ export default function useContentTypes() {
   const { get } = useFetchClient();
   const { formatAPIError } = useAPIErrorHandler();
   const toggleNotification = useNotification();
+
+  const onError = (error) => {
+    if (isAxiosError(error)) {
+      toggleNotification({
+        type: 'warning',
+        message: formatAPIError(error)
+      });
+    }
+  };
+
   const queries = useQueries([
     {
       queryKey: ['content-manager', 'components'],
@@ -21,14 +31,7 @@ export default function useContentTypes() {
 
         return data;
       },
-      onError(error) {
-        if (error instanceof AxiosError) {
-          toggleNotification({
-            type: 'warning',
-            message: formatAPIError(error)
-          });
-        }
-      }
+      onError,
     },
 
     {
@@ -40,14 +43,7 @@ export default function useContentTypes() {
 
         return data;
       },
-      onError(error) {
-        if (error instanceof AxiosError) {
-          toggleNotification({
-            type: 'warning',
-            message: formatAPIError(error)
-          });
-        }
-      }
+      onError,
     },
 
     {
@@ -59,14 +55,7 @@ export default function useContentTypes() {
 
         return data;
       },
-      onError(error) {
-        if (error instanceof AxiosError) {
-          toggleNotification({
-            type: 'warning',
-            message: formatAPIError(error)
-          });
-        }
-      }
+      onError,
     }
   ]);
 
