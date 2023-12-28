@@ -3,7 +3,7 @@ import {
   useFetchClient,
   useNotification
 } from '@strapi/helper-plugin';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { useMutation } from 'react-query';
 
 export default function useApplyTrail() {
@@ -12,10 +12,16 @@ export default function useApplyTrail() {
   const toggleNotification = useNotification();
 
   return useMutation({
-    mutationFn: async ({ trail }) => {
-      const { recordId, content, contentType } = trail;
+    mutationFn: async ({ trail, schema }) => {
+      const { recordId, content } = trail;
+      const { uid, kind } = schema;
+      const isSingleType = kind === 'singleType';
+      const typePath = isSingleType ? 'single-types' : 'collection-types';
+
       await put(
-        `/content-manager/collection-types/${contentType}/${recordId}`,
+        `/content-manager/${typePath}/${uid}${
+          isSingleType ? '' : `/${recordId}`
+        }`,
         content
       );
 
@@ -25,7 +31,7 @@ export default function useApplyTrail() {
       );
     },
     onError(error) {
-      if (error instanceof AxiosError) {
+      if (isAxiosError(error)) {
         toggleNotification({
           type: 'warning',
           message: formatAPIError(error)

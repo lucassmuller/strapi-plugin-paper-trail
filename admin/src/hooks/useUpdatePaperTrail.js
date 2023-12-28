@@ -3,7 +3,7 @@ import {
   useFetchClient,
   useNotification
 } from '@strapi/helper-plugin';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { useMutation } from 'react-query';
 
 export default function useUpdatePaperTrail() {
@@ -19,7 +19,7 @@ export default function useUpdatePaperTrail() {
       );
     },
     onError(error) {
-      if (error instanceof AxiosError) {
+      if (isAxiosError(error)) {
         toggleNotification({
           type: 'warning',
           message: formatAPIError(error)

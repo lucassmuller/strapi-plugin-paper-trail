@@ -26,11 +26,11 @@ const DraftChangedField = ({
   value,
   oldValue,
   schema,
-  comments,
   componentTypes,
+  comments,
   handleCommentChange
 }) => {
-  if (IGNORE_FIELDS.includes(path)) return;
+  if (IGNORE_FIELDS.includes(path) || path.startsWith('__')) return;
 
   const type = get(schema, ['attributes', path, 'type'], '');
   const fullPath = pathToParent ? [pathToParent, path].join('.') : path;
@@ -86,6 +86,47 @@ const DraftChangedField = ({
                   handleCommentChange={handleCommentChange}
                 />
               ))}
+        </Flex>
+      </Wrapper>
+    );
+  }
+
+  if (type === 'dynamiczone') {
+    return (
+      <Wrapper hideComment label={path} level={level}>
+        <Flex gap={6} direction="column" alignItems="stretch">
+          {value.map((newValue, index) => {
+            if (isEmpty(newValue)) return;
+
+            const componentType = componentTypes?.find(
+              type => type.uid === newValue.__component
+            );
+
+            return (
+              <Wrapper
+                hideComment
+                label={`Item ${index + 1} (${componentType.info.displayName})`}
+                level={level + 1}
+              >
+                <Flex gap={6} direction="column" alignItems="stretch">
+                  {Object.entries(newValue).map(([key, value]) => (
+                    <DraftChangedField
+                      key={key}
+                      level={level + 2}
+                      path={key}
+                      pathToParent={''}
+                      value={value}
+                      oldValue={oldValue?.[index]?.[key]}
+                      schema={componentType}
+                      componentTypes={componentTypes}
+                      comments={comments}
+                      handleCommentChange={handleCommentChange}
+                    />
+                  ))}
+                </Flex>
+              </Wrapper>
+            );
+          })}
         </Flex>
       </Wrapper>
     );
