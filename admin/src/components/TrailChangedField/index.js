@@ -5,8 +5,7 @@ import {
   Flex,
   Grid,
   TextInput,
-  Textarea,
-  Typography
+  Textarea
 } from '@strapi/design-system';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
@@ -19,7 +18,7 @@ import RelationField from './RelationField';
 const IGNORE_FIELDS = ['id'];
 const TEXTAREA_TYPES = ['text', 'richtext', 'json'];
 
-const DraftChangedField = ({
+const TrailChangedField = ({
   level = 0,
   path,
   pathToParent = '',
@@ -35,9 +34,11 @@ const DraftChangedField = ({
   const type = get(schema, ['attributes', path, 'type'], '');
   const fullPath = pathToParent ? [pathToParent, path].join('.') : path;
 
-  const onCommentChange = event => {
-    handleCommentChange?.(fullPath, event.target.value);
-  };
+  const onCommentChange = handleCommentChange
+    ? event => {
+        handleCommentChange(fullPath, event.target.value);
+      }
+    : undefined;
 
   if (type === 'component') {
     const component = get(schema, ['attributes', path, 'component'], '');
@@ -46,7 +47,7 @@ const DraftChangedField = ({
 
     return (
       <Wrapper hideComment label={path} level={level}>
-        <Flex gap={6} direction="column" alignItems="stretch">
+        <Flex gap={2} direction="column" alignItems="stretch">
           {isRepeatable
             ? value.map((newValue, index) =>
                 isEmpty(newValue) ? null : (
@@ -57,7 +58,7 @@ const DraftChangedField = ({
                   >
                     <Flex gap={6} direction="column" alignItems="stretch">
                       {Object.entries(newValue).map(([key, value]) => (
-                        <DraftChangedField
+                        <TrailChangedField
                           key={key}
                           level={level + 2}
                           path={key}
@@ -74,7 +75,7 @@ const DraftChangedField = ({
                 )
               )
             : Object.entries(value).map(([key, value]) => (
-                <DraftChangedField
+                <TrailChangedField
                   key={key}
                   level={level + 1}
                   path={key}
@@ -108,9 +109,9 @@ const DraftChangedField = ({
                 label={`Item ${index + 1} (${componentType.info.displayName})`}
                 level={level + 1}
               >
-                <Flex gap={6} direction="column" alignItems="stretch">
+                <Flex gap={2} direction="column" alignItems="stretch">
                   {Object.entries(newValue).map(([key, value]) => (
-                    <DraftChangedField
+                    <TrailChangedField
                       key={key}
                       level={level + 2}
                       path={key}
@@ -176,9 +177,9 @@ const DraftChangedField = ({
       comment={get(comments, fullPath, null)}
       onCommentChange={onCommentChange}
     >
-      <Grid gap={6} gridCols={2} alignItems="center">
-        <Input label="Current value" value={mapValue(oldValue)} readOnly />
-        <Input label="New value" value={mapValue(value)} readOnly />
+      <Grid gap={2} gridCols={2} alignItems="center">
+        <Input aria-label="Previous value" value={mapValue(oldValue)} readOnly />
+        <Input aria-label="New value" value={mapValue(value)} readOnly />
       </Grid>
     </Wrapper>
   );
@@ -199,15 +200,15 @@ const Wrapper = ({
       hasRadius
       background={level % 2 === 0 ? 'neutral100' : 'neutral0'}
       shadow="tableShadow"
-      paddingLeft={6}
-      paddingRight={6}
+      paddingLeft={2}
+      paddingRight={2}
       marginTop={1}
-      paddingTop={6}
-      paddingBottom={6}
+      paddingTop={2}
+      paddingBottom={2}
       borderColor="neutral150"
     >
       {children}
-      {!hideComment && (
+      {!hideComment && onCommentChange && (
         <>
           <Box paddingTop={4} paddingBottom={4}>
             <Divider />
@@ -224,4 +225,4 @@ const Wrapper = ({
   </div>
 );
 
-export default DraftChangedField;
+export default TrailChangedField;

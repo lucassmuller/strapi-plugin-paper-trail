@@ -18,18 +18,22 @@ const MediaField = ({ value: newMedia, oldValue: currentMedia, multiple }) => {
   const mediasData = medias.map(media => media.data);
 
   return (
-    <Grid gap={6} gridCols={2} alignItems="start">
+    <Grid gap={2} gridCols={2} alignItems="start">
       <Media
-        label="Current media"
+        // label="Previous media"
         medias={multiple ? currentMedia : [currentMedia]}
       />
-      <Media label="New media" medias={mediasData} loading={isLoading} />
+      <Media
+        // label="New media"
+        medias={mediasData}
+        loading={isLoading}
+      />
     </Grid>
   );
 };
 
 const Media = ({ medias, label, loading }) => (
-  <Box>
+  <Box overflow="hidden">
     <FieldLabel>{label}</FieldLabel>
     {loading ? (
       <Loader small>Loading media...</Loader>

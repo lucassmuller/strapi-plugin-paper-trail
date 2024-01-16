@@ -45,7 +45,7 @@ const RelationField = ({ value, targetContentType }) => {
   const disconnectRecords = mapRelations(value?.disconnect);
 
   return (
-    <Grid gap={6} gridCols={2} alignItems="start">
+    <Grid gap={2} gridCols={2} alignItems="start">
       <RelationList label="Connect" value={connectRecords} />
       <RelationList label="Disconnect" value={disconnectRecords} />
     </Grid>
@@ -65,7 +65,7 @@ const RelationList = ({ value, label }) => {
               hasRadius
               shadow="tableShadow"
               borderColor="neutral150"
-              padding={3}
+              padding={2}
               marginTop={1}
             >
               <Link to={item.href} target="_blank">

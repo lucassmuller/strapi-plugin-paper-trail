@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Divider,
+  LinkButton,
   Loader,
   Textarea,
   Typography
@@ -16,6 +17,7 @@ import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 
+import pluginId from '../../pluginId';
 import cleanData from '../../utils/cleanData';
 import getTrad from '../../utils/getTrad';
 import getUser from '../../utils/getUser';
@@ -178,6 +180,14 @@ function PaperTrail() {
   // TODO: Add support for deleted record audit trails
   // TODO: Add up/down for changing UIDs and enabling/disabling plugin
 
+  const trailsLink = [
+    `/plugins/${pluginId}?page=1`,
+    'pageSize=10',
+    `filters[$and][0][contentType][$eq]=${uid}&filters[$and][1][recordId][$eq]=${
+      isSingleType ? 1 : id
+    }`
+  ].join('&');
+
   return (
     <Fragment>
       <Box
@@ -256,12 +266,12 @@ function PaperTrail() {
                   />
                 </Box>
                 <Box paddingTop={4}>
-                  <Button onClick={() => setModalVisible(!modalVisible)}>
+                  <LinkButton to={trailsLink} target="_blank">
                     {formatMessage({
                       id: getTrad('plugin.admin.paperTrail.viewAll'),
                       defaultMessage: 'View all'
                     })}
-                  </Button>
+                  </LinkButton>
                 </Box>
               </Fragment>
             )}

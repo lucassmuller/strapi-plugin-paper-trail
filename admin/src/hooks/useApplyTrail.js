@@ -13,17 +13,19 @@ export default function useApplyTrail() {
 
   return useMutation({
     mutationFn: async ({ trail, schema }) => {
-      const { recordId, content } = trail;
+      const { recordId, content, change } = trail;
       const { uid, kind } = schema;
       const isSingleType = kind === 'singleType';
       const typePath = isSingleType ? 'single-types' : 'collection-types';
 
-      await put(
-        `/content-manager/${typePath}/${uid}${
-          isSingleType ? '' : `/${recordId}`
-        }`,
-        content
-      );
+      if (change === 'DRAFT') {
+        await put(
+          `/content-manager/${typePath}/${uid}${
+            isSingleType ? '' : `/${recordId}`
+          }`,
+          content
+        );
+      }
 
       return put(
         `/content-manager/collection-types/plugin::paper-trail.trail/${trail.id}`,
@@ -41,7 +43,7 @@ export default function useApplyTrail() {
     onSuccess() {
       toggleNotification({
         type: 'success',
-        message: 'Paper Trail applied successfully'
+        message: 'Paper Trail approved successfully'
       });
     }
   });

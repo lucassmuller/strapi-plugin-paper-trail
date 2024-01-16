@@ -14,10 +14,9 @@ import isEmpty from 'lodash/isEmpty';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import DraftChangedField from '../../components/DraftChangedField';
+import TrailChangedField from '../../components/TrailChangedField';
 import useApplyTrail from '../../hooks/useApplyTrail';
 import useContentTypes from '../../hooks/useContentTypes';
-import useGetContent from '../../hooks/useGetContent';
 import useGetPaperTrail from '../../hooks/useGetPaperTrail';
 import useUpdatePaperTrail from '../../hooks/useUpdatePaperTrail';
 import pluginId from '../../pluginId';
@@ -27,10 +26,6 @@ import getTrailEntityName from '../../utils/getTrailEntityName';
 const TrailPage = () => {
   const { id } = useParams();
   const { data: trail, isLoading: isLoadingTrail } = useGetPaperTrail({ id });
-  const { data: originalContent } = useGetContent({
-    id: trail?.recordId,
-    contentType: trail?.contentType
-  });
   const {
     contentTypes,
     componentTypes,
@@ -48,28 +43,15 @@ const TrailPage = () => {
   }, [trail]);
 
   const changedFields = useMemo(() => {
-    if (
-      !trail ||
-      !originalContent ||
-      !contentTypes ||
-      !componentTypes ||
-      isLoadingContentTypes
-    )
+    if (!trail || !contentTypes || !componentTypes || isLoadingContentTypes)
       return;
 
     return getTrailChangedFields({
       trail,
-      originalContent,
       components: componentTypes,
       contentTypes
     });
-  }, [
-    trail,
-    originalContent,
-    contentTypes,
-    componentTypes,
-    isLoadingContentTypes
-  ]);
+  }, [trail, contentTypes, componentTypes, isLoadingContentTypes]);
 
   const handleCommentChange = (path, value) => {
     setFieldComments(set(path, value, fieldComments));
@@ -129,7 +111,7 @@ const TrailPage = () => {
                 Comment and reprove
               </Button>
               <Button startIcon={<Check />} onClick={handleApplyTrail}>
-                Approve and apply changes
+                Approve {trail.change === 'DRAFT' && <>and apply changes</>}
               </Button>
             </Flex>
           }
@@ -148,9 +130,9 @@ const TrailPage = () => {
             trail,
             contentTypesSettings
           })}`}
-          subtitle={`Version ${trail.version} by ${trailBy} - Last updated by ${
-            lastChangeBy || '-'
-          }`}
+          subtitle={`${trail.change} - Version ${
+            trail.version
+          } by ${trailBy} - Last updated by ${lastChangeBy || '-'}`}
           as="h2"
         />
       </Box>
@@ -166,19 +148,17 @@ const TrailPage = () => {
           marginBottom={6}
           borderColor="neutral150"
         >
-          {trail.status === 'approved' ? (
-            <Typography>Changes applied, no diffs to display</Typography>
-          ) : isEmpty(changedFields) ? (
-            <Typography>No changes to display</Typography>
+          {isEmpty(changedFields) ? (
+            <Typography>No diffs to display</Typography>
           ) : (
             <Flex direction="column" gap={6} alignItems="stretch">
               {changedFields &&
                 Object.entries(changedFields).map(([key, value]) => (
-                  <DraftChangedField
+                  <TrailChangedField
                     key={`${key}-field`}
                     path={key}
                     value={value}
-                    oldValue={originalContent[key]}
+                    oldValue={trail.previousContent[key]}
                     schema={schema}
                     componentTypes={componentTypes}
                     comments={fieldComments}

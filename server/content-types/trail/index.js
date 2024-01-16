@@ -38,6 +38,9 @@ module.exports = {
       content: {
         type: 'json'
       },
+      previousContent: {
+        type: 'json'
+      },
       admin_user: {
         type: 'relation',
         relation: 'oneToOne',
