@@ -2,13 +2,13 @@ import { BaseHeaderLayout, Box } from '@strapi/design-system';
 import { useQueryParams } from '@strapi/helper-plugin';
 import React, { useEffect } from 'react';
 
-import DraftTrailTable from '../../components/DraftTrailTable';
-import useGetDraftTrails from '../../hooks/useGetDraftTrails';
+import TrailRecordsTable from '../../components/TrailRecordsTable';
+import useGetPaperTrails from '../../hooks/useGetPaperTrails';
 
 const HomePage = () => {
   const [{ query: params } = {}, setQuery] = useQueryParams(null);
   const { data: { results: trails, pagination } = {}, isLoading } =
-    useGetDraftTrails({
+    useGetPaperTrails({
       params
     });
 
@@ -18,20 +18,6 @@ const HomePage = () => {
         page: 1,
         pageSize: 10,
         sort: 'updatedAt:asc',
-        filters: {
-          $and: [
-            {
-              change: {
-                $eq: 'DRAFT'
-              }
-            },
-            {
-              status: {
-                $eq: 'pending'
-              }
-            }
-          ]
-        }
       });
     }
   }, [params]);
@@ -40,10 +26,10 @@ const HomePage = () => {
     <Box background="neutral100" marginBottom={10}>
       <BaseHeaderLayout
         title="Paper Trail"
-        subtitle={`${pagination?.total || 0} entities found`}
+        subtitle={`${pagination?.total || 0} entries found`}
         as="h2"
       />
-      <DraftTrailTable
+      <TrailRecordsTable
         trails={trails}
         pagination={pagination}
         loading={isLoading}

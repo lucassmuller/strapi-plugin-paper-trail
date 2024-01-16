@@ -4,7 +4,7 @@ const prepareTrailFromSchema = require('../utils/prepareTrailFromSchema');
 const entityName = require('../utils/entityName');
 
 module.exports = ({ strapi }) => ({
-  async createPaperTrail(context, schema, uid, change, isAdmin) {
+  async createPaperTrail(context, schema, uid, change, previousContent, isAdmin) {
     const body = isAdmin ? context.request.body : context.request.body.data;
     const user = context.state.user;
     const userId = user?.id;
@@ -47,6 +47,7 @@ module.exports = ({ strapi }) => ({
       },
       change,
       content: trail,
+      previousContent,
       contentType: uid,
       recordId: id,
       users_permissions_user: {

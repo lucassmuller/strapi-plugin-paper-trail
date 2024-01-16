@@ -7,13 +7,11 @@ const EXCLUDED_FIELDS = ['publishedAt', '__temp_key__'];
 
 const getTrailChangedFields = ({
   trail,
-  originalContent,
   contentTypes,
   components
 } = {}) => {
   if (
     !trail ||
-    !originalContent ||
     !contentTypes?.length ||
     !components?.length
   )
@@ -137,7 +135,7 @@ const getTrailChangedFields = ({
 
   const schema = contentTypes.find(type => type.uid === trail.contentType);
 
-  return recursiveGetChangedFields(trail.content, originalContent, schema, '');
+  return recursiveGetChangedFields(trail.content, trail.previousContent, schema, '');
 };
 
 export default getTrailChangedFields;

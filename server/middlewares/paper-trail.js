@@ -1,45 +1,93 @@
 const checkContext = require('../utils/checkContext');
+const allowedStatuses = require('../utils/allowedStatuses');
 
 module.exports = async (ctx, next) => {
-  await next();
-
-  /**
-   * Try/Catch so we don't totally mess with the admin panel if something is wrong
-   */
-
   try {
-    const { uid, schema, isAdmin, change } = checkContext(ctx);
+    const { uid, recordId, schema, isAdmin, change } = checkContext(ctx);
 
     if (!schema) {
-      return;
+      return next();
     }
 
+    const previousContent = await findEntity(recordId, uid);
+
+    await next();
+
     /**
-     * If we have a returned schema, check it for paperTrail.enabled
+     * Try/Catch so we don't totally mess with the admin panel if something is wrong
      */
 
-    const { pluginOptions } = schema;
+    try {
+      const { status } = ctx.response;
 
-    const enabled = pluginOptions?.paperTrail?.enabled;
+      const allowedStatusCheck = allowedStatuses.includes(status);
 
-    if (enabled) {
+      if (!allowedStatusCheck) {
+        return;
+      }
+
       /**
-       * Intercept the body and take a snapshot of the change
+       * If we have a returned schema, check it for paperTrail.enabled
        */
 
-      const paperTrailService = strapi
-        .plugin('paper-trail')
-        .service('paperTrailService');
+      const { pluginOptions } = schema;
 
-      await paperTrailService.createPaperTrail(
-        ctx,
-        schema,
-        uid,
-        change,
-        isAdmin
-      );
+      const enabled = pluginOptions?.paperTrail?.enabled;
+
+      if (enabled) {
+        /**
+         * Intercept the body and take a snapshot of the change
+         */
+
+        const paperTrailService = strapi
+          .plugin('paper-trail')
+          .service('paperTrailService');
+
+        await paperTrailService.createPaperTrail(
+          ctx,
+          schema,
+          uid,
+          change,
+          previousContent,
+          isAdmin
+        );
+      }
+    } catch (Err) {
+      console.warn('paper-trail: ', Err);
     }
   } catch (Err) {
     console.warn('paper-trail: ', Err);
+    await next();
   }
+};
+
+const findEntity = async (recordId, uid) => {
+  const entityManager = strapi
+    .plugin('content-manager')
+    .service('entity-manager');
+
+  const populate = await strapi
+    .plugin('content-manager')
+    .service('populate-builder')(uid)
+    .populateDeep(Infinity)
+    .countRelations()
+    .build();
+
+  const value = await entityManager.findOne(recordId, uid, { populate });
+
+  if (!value) {
+    return null;
+  }
+
+  const { createdBy, updatedBy, ...rest } = value;
+
+  return {
+    ...rest,
+    createdBy: {
+      id: createdBy?.id
+    },
+    updatedBy: {
+      id: createdBy?.id
+    }
+  };
 };
