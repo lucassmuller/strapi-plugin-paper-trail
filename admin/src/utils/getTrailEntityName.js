@@ -7,7 +7,7 @@ const getTrailEntityName = ({ trail, contentTypesSettings } = {}) => {
   const mainField = contentTypeSettings.settings.mainField;
   if (mainField === 'id') return `ID ${trail.recordId}`;
 
-  const name = trail.content[mainField];
+  const name = trail.content[mainField] || trail.previousContent[mainField];
 
   return `${name} (ID ${trail.recordId})`;
 };

@@ -195,7 +195,7 @@ const Wrapper = ({
   comment
 }) => (
   <div>
-    <FieldLabel>{label}</FieldLabel>
+    <FieldLabel>{label} (left previous value/right new value)</FieldLabel>
     <Box
       hasRadius
       background={level % 2 === 0 ? 'neutral100' : 'neutral0'}

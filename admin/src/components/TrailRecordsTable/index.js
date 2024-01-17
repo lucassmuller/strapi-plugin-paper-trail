@@ -3,6 +3,7 @@ import {
   Button,
   Checkbox,
   Flex,
+  IconButton,
   LinkButton,
   SearchForm,
   Searchbar,
@@ -21,11 +22,12 @@ import {
   PaginationURLQuery,
   useQueryParams
 } from '@strapi/helper-plugin';
-import { Eye } from '@strapi/icons';
+import { Check, Cross, Eye } from '@strapi/icons';
 import set from 'lodash/fp/set';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
 import React, { useMemo, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 import useBulkUpdateTrailStatus from '../../hooks/useBulkUpdateTrailStatus';
 import useContentTypes from '../../hooks/useContentTypes';
@@ -69,10 +71,12 @@ export default function TrailRecordsTable({ trails, pagination, loading }) {
         <Flex marginBottom={2} justifyContent="space-between">
           <Tabs handleSelect={handleSelectTab} selected={selectedTab} />
           <Flex gap={2} alignItems="flex-end">
-            <SearchForm onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch(search);
-            }}>
+            <SearchForm
+              onSubmit={e => {
+                e.preventDefault();
+                handleSearch(search);
+              }}
+            >
               <Searchbar
                 onClear={() => {
                   setSearch('');
@@ -116,13 +120,15 @@ export default function TrailRecordsTable({ trails, pagination, loading }) {
             </Typography>
             <Button
               variant="success-light"
-              onClick={() => bulkUpdate('approved')}
+              onClick={() => bulkUpdate(TRAIL_STATUS.APPROVED)}
+              startIcon={<Check />}
             >
               Approve
             </Button>
             <Button
               variant="danger-light"
-              onClick={() => bulkUpdate('changes_required')}
+              onClick={() => bulkUpdate(TRAIL_STATUS.REPROVED)}
+              startIcon={<Cross />}
             >
               Reprove
             </Button>
@@ -191,6 +197,12 @@ export default function TrailRecordsTable({ trails, pagination, loading }) {
                       : selectedTrailIds.filter(id => id !== entry.id)
                   )
                 }
+                onUpdateStatus={newStatus =>
+                  bulkUpdateTrails({
+                    trailIds: [entry.id],
+                    status: newStatus
+                  })
+                }
               />
             ))}
           </Tbody>
@@ -205,7 +217,13 @@ export default function TrailRecordsTable({ trails, pagination, loading }) {
   );
 }
 
-const TableItem = ({ trail, selected, onSelect, hideChanges }) => {
+const TableItem = ({
+  trail,
+  selected,
+  onSelect,
+  onUpdateStatus,
+  hideChanges
+}) => {
   const {
     contentTypesSettings,
     contentTypes,
@@ -271,7 +289,9 @@ const TableItem = ({ trail, selected, onSelect, hideChanges }) => {
       </Td>
       {!hideChanges && (
         <Td>
-          {isEmpty(changedFields) ? (
+          {trail.change === 'DELETE' ? (
+            <Typography>Entity deleted</Typography>
+          ) : isEmpty(changedFields) ? (
             <Typography>No diffs to display</Typography>
           ) : (
             <Flex direction="column" gap={6} alignItems="stretch">
@@ -296,28 +316,43 @@ const TableItem = ({ trail, selected, onSelect, hideChanges }) => {
         </Flex>
       </Td>
       <Td>
-        <LinkButton
-          size="S"
-          variant="tertiary"
-          startIcon={<Eye />}
-          to={`/plugins/${pluginId}/${trail.id}`}
-        >
-          View
-        </LinkButton>
+        <Flex>
+          <NavLink to={`/plugins/${pluginId}/${trail.id}`}>
+            <IconButton icon={<Eye />} label="View trail" borderWidth={0} />
+          </NavLink>
+          <IconButton
+            icon={<Check />}
+            label="Approve"
+            borderWidth={0}
+            onClick={() => onUpdateStatus(TRAIL_STATUS.APPROVED)}
+          />
+          <IconButton
+            icon={<Cross />}
+            label="Reprove"
+            borderWidth={0}
+            onClick={() => onUpdateStatus(TRAIL_STATUS.REPROVED)}
+          />
+        </Flex>
       </Td>
     </Tr>
   );
 };
 
+const TRAIL_STATUS = {
+  APPROVED: 'approved',
+  REPROVED: 'changes_required',
+  PENDING: 'pending'
+};
+
 const TrailStatus = ({ status } = {}) => {
-  if (status === 'approved')
+  if (status === TRAIL_STATUS.APPROVED)
     return (
       <Status size="S" variant="success" showBullet={false}>
         <Typography>Approved</Typography>
       </Status>
     );
 
-  if (status === 'changes_required')
+  if (status === TRAIL_STATUS.REPROVED)
     return (
       <Status size="S" variant="alternative" showBullet={false}>
         <Typography>Reproved</Typography>
