@@ -279,7 +279,7 @@ const TableItem = ({
       </Td>
       <Td>
         <Typography textColor="neutral800">
-          {trail.admin_user.firstname} {trail.admin_user.lastname}
+          {trail.admin_user?.firstname} {trail.admin_user?.lastname}
         </Typography>
       </Td>
       <Td>
