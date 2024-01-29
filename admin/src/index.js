@@ -24,7 +24,12 @@ export default {
         const component = await import('./pages/App');
         return component;
       },
-      permissions: []
+      permissions: [
+        {
+          action: 'plugin::paper-trail.sidebar',
+          subject: null
+        }
+      ]
     });
 
     app.registerPlugin({

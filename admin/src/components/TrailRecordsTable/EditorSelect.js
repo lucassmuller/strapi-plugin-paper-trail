@@ -19,7 +19,7 @@ const EditorSelect = ({ value, setValue }) => {
     >
       {users?.map(user => (
         <SingleSelectOption value={user.id}>
-          {user.firstname} {user.lastname}
+          {user?.firstname} {user?.lastname}
         </SingleSelectOption>
       ))}
     </SingleSelect>

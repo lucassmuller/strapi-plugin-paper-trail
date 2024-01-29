@@ -1,6 +1,6 @@
 {
   "name": "@lucassmuller/strapi-plugin-paper-trail",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Accountability and content versioning for strapi v4+",
   "strapi": {
     "name": "paper-trail",
